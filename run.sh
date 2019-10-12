@@ -28,9 +28,11 @@ http {
     default_type        application/octet-stream;
     sendfile            on;
     keepalive_timeout   65;
+    access_log stderr;
+    error_log stderr;
 
     server {
-        listen          8080;
+        listen          80;
         server_name     localhost;
 
         location /hls {
@@ -43,10 +45,9 @@ http {
             add_header  Access-Control-Allow-Origin *;
         }
 
-	location / { try_files $uri @yourapplication; }
-	location @yourapplication {
+	location / {
 		include uwsgi_params;
-		uwsgi_pass unix:/var/www/flask/app_uwsgi.sock;
+		uwsgi_pass 127.0.0.1:3831;
 	}    
 
         location /on_publish {
@@ -135,5 +136,6 @@ else
 fi
 
 echo "Starting server..."
+uwsgi --ini /var/www/flask/app_uwsgi.ini &
 /opt/nginx/sbin/nginx -g "daemon off;"
 
